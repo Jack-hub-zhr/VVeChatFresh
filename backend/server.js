@@ -1195,6 +1195,34 @@ setInterval(cleanupOldMessages, 60 * 60 * 1000); // every hour
 
 // (Root console removed per user request — see commit message)
 
+// ============================================================
+// Static frontend — serve the SPA from ../frontend so that a single
+// Render Web Service provides BOTH the UI and the API under one URL:
+//   https://<service>.onrender.com/       -> frontend
+//   https://<service>.onrender.com/api/*  -> JSON API
+// ============================================================
+const path = require('path');
+const FRONTEND_DIR = path.join(__dirname, '..', 'frontend');
+if (fs.existsSync(FRONTEND_DIR)) {
+  app.use(express.static(FRONTEND_DIR, {
+    maxAge: 0,               // never cache — always serve fresh code
+    etag: false,
+    lastModified: false,
+    setHeaders: (res) => {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+    },
+  }));
+  // SPA fallback: any non-/api path serves index.html
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/')) return next();
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+    res.sendFile(path.join(FRONTEND_DIR, 'index.html'));
+  });
+  console.log('[VVeChat] serving frontend from', FRONTEND_DIR);
+} else {
+  console.warn('[VVeChat] frontend dir not found at', FRONTEND_DIR, '- API only');
+}
+
 server.listen(PORT, () => {
   console.log(`[VVeChat] listening on http://0.0.0.0:${PORT}`);
 });
