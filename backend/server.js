@@ -1201,7 +1201,6 @@ setInterval(cleanupOldMessages, 60 * 60 * 1000); // every hour
 //   https://<service>.onrender.com/       -> frontend
 //   https://<service>.onrender.com/api/*  -> JSON API
 // ============================================================
-const path = require('path');
 const FRONTEND_DIR = path.join(__dirname, '..', 'frontend');
 if (fs.existsSync(FRONTEND_DIR)) {
   app.use(express.static(FRONTEND_DIR, {
