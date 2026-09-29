@@ -698,7 +698,8 @@
 
   function renderTopbarAvatar() {
     const el = $('#topbar-avatar');
-    if (!el || !state.user) return;
+    if (!el) return;
+    if (!state.user) { el.textContent = '?'; el.style.background = 'linear-gradient(135deg,#5eead4,#60a5fa)'; return; }
     // Jack ALWAYS gets the signature gold — don't trust stale localStorage.
     const isJack = state.user.username === 'Jack' || !!state.user.is_admin;
     const color = isJack ? '#fbbf24' : (state.user.avatar_color || '#5eead4');
@@ -2182,6 +2183,18 @@
   }
 
   // ---------- init ----------
+  // Bump whenever the auth shape changes — forces a clean re-login so
+  // stale localStorage user objects (missing is_admin/avatar_color) get dropped.
+  const AUTH_SCHEMA = 'v43';
+  (function purgeStaleAuth() {
+    try {
+      if (localStorage.getItem('vve:authSchema') !== AUTH_SCHEMA) {
+        ['vve:token', 'vve:user'].forEach(k => localStorage.removeItem(k));
+        localStorage.setItem('vve:authSchema', AUTH_SCHEMA);
+      }
+    } catch (_) {}
+  })();
+
   function init() {
     try {
       setLang(lang);
