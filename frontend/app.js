@@ -598,6 +598,11 @@
   async function jackWipeGroup(groupId) {
     return api(`/admin/messages/wipe-group/${groupId}`, { method: 'POST' });
   }
+
+  // Jack-only: disband (permanently delete) a group.
+  async function jackDisbandGroup(gid) {
+    return api(`/groups/${gid}/disband`, { method: 'POST', body: {} });
+  }
   async function jackBatchDelete(body) {
     return api('/admin/messages/batch', { method: 'POST', body });
   }
@@ -1920,7 +1925,7 @@
       _splash.style.pointerEvents = 'none';
     }
     splashDismissed = true;
-    bindAppEvents();         // <-- always bind so refresh works
+    try { bindAppEvents(); } catch (e) { console.error('[VVeChat] bindAppEvents failed:', e); }
     renderTopbarAvatar();
     connectSocket();
     refreshAll();
@@ -2073,9 +2078,6 @@
 
     // logout
     $('#btn-logout')?.addEventListener('click', (e) => { e.currentTarget._handled = true; logout(); });
-
-    // Root console (Jack only)
-    initRootConsole();
 
     // admin (deprecated old key system) — Jack-only mode uses regular auth
     // admin wipe button in chat header (Jack only)
